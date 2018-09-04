@@ -22,14 +22,17 @@
 			<div @click="pressKey" class="key dot">.</div>
 			<div @click="pressEqual" class="key equal">=</div>
 		</div> -->
-		<div class="grid">
-			<div class="col col-1" draggable @dragstart="drag" @drop="drop" @dragover="dragover" v-for="(item, key, index) in fakeNews">
-                {{item.horario}}
-                <!-- <div class="row header header-1 bananinha1"><span @mousedown.prevent="resizeColumn">{{item.horario}}</span></div>
-				<div class="row">data bananinha1</div>
-				<div class="row">data bananinha1</div> -->
+        <select @change="statusColumn()" v-model="dontShow">
+            <option v-for="header in headers" :value="header">{{header.value}}</option>
+        </select>
+        <div>
+            {{dontShow}}
+        </div>
+		<div class="grid" v-bind:style="{gridTemplateColumns: frColumns}">
+			<div class="col" :class="'col-'+index" draggable @dragstart="drag" @drop="drop" @dragover="dragover" v-for="(header,index,key) in headers">
+                <div v-show="header.show" class="row header header-1">{{header.value}}<span @mousedown.prevent="resizeColumn"></span></div>
+				<div v-show="header.show" class="row" v-for="(item, key, index) in fakeNews">{{item[header.value]}}</div>
             </div>
-
 		</div>
 	</div>
 </template>
@@ -51,34 +54,39 @@ export default Vue.extend({
             operator: '',
             numberTwo: '',
             columnDrag: '',
+            dontShow: '',
+            frColumns: '',
+            headers: [
+                {value: 'horario', show: true},
+                {value: 'conta', show: true},
+                {value: 'url', show: true},
+                {value: 'localidade', show: true},
+                {value: 'data', show: true}
+            ],
             fakeNews: [
                 {
-                    horario: 'bananinha06',
-                    conta: 'bananinha',
-                    url: 'bananinha',
-                    localidade: 'bananinha'
+                    horario: 'horarioo - 1',
+                    conta: 'contaa - 1',
+                    url: 'urll - 1',
+                    data: 'data - 1'
+                },
+                {
+                    horario: 'horarioo',
+                    conta: 'contaa',
+                    url: 'urll',
+                    localidade: 'localidadee',
+                    data: 'data'
                 }
             ]
         };
     },
     created: function() {
-        /* this.disableSelect(); */
-        const fakeNews = {
-            horario: ['bananinha', 'bananinha'],
-            conta: ['bananinha', 'bananinha'],
-            descrição: ['bananinha', 'bananinha'],
-            url: ['bananinha', 'bananinha'],
-            localidade: ['bananinha', 'bananinha']
-        };
-        window.addEventListener(
-            'load',
-            function(event) {
-                this.mountHtmlGrid();
-            }.bind(this)
+        window.addEventListener( 'load', function(event) {
+            this.frColumns = this.templateColumns(Object.keys(this.headers.filter(function(obj) { return obj.show === true; })).length);
+        }.bind(this)
         );
     },
     methods: {
-        mountHtmlGrid() {},
         clear() {
             this.display = '';
             this.numberOne = '';
@@ -103,7 +111,6 @@ export default Vue.extend({
                         this.operator = `*`;
                         break;
                     default:
-                        console.log(domElement.innerHTML);
                         this.operator = domElement.innerHTML;
                         break;
                 }
@@ -111,7 +118,6 @@ export default Vue.extend({
             }
 
             if (this.operator) {
-                console.log(this.operator);
                 this.numberTwo = `${this.numberTwo}${domElement.innerHTML}`;
                 this.display = this.numberTwo;
                 return;
@@ -120,9 +126,10 @@ export default Vue.extend({
             this.numberOne = `${this.numberOne}${domElement.innerHTML}`;
             this.display = this.numberOne;
 
-            console.log(`numberOne:${this.numberOne}`);
-            console.log(`operator:${this.operator}`);
-            console.log(`numberTwo:${this.numberTwo}`);
+        },
+        statusColumn() {
+            this.dontShow.show = !this.dontShow.show;
+            this.frColumns = this.templateColumns(Object.keys(this.headers.filter(function(obj) { return obj.show === true; })).length);
         },
         signal() {
             this.display =
@@ -133,6 +140,13 @@ export default Vue.extend({
         },
         hover(event: Event) {
             let elementHover = (document.onmouseover = domElement => domElement);
+        },
+        templateColumns(num) {
+            let templateColumns = '';
+            for (let i = 0; i < num; i++){
+                templateColumns += '1fr ';
+            }
+            return templateColumns;
         },
         drop(event: Event) {
             let columnDrop = event.srcElement.parentElement;
@@ -225,7 +239,7 @@ export default Vue.extend({
 .grid {
     display: grid;
     border: 1px solid red;
-    max-width: 1020px;
+    max-width: 1280px;
     min-width: 5 * 200px;
     overflow-x: auto;
     .col {
@@ -239,11 +253,12 @@ export default Vue.extend({
         .row {
             border-bottom: 1px solid red;
             white-space: nowrap;
+            height: 18px;
             &.header {
                 position: relative;
                 background-color: aqua;
                 &.bananinha1::after {
-                    content: 'bananinha1';
+                    
                 }
                 &.bananinha2::after {
                     content: 'bananinha2';
