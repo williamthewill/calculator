@@ -22,32 +22,14 @@
 			<div @click="pressKey" class="key dot">.</div>
 			<div @click="pressEqual" class="key equal">=</div>
 		</div> -->
-		<div class="grid" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr">
-			<div class="col col-1" draggable @dragstart="drag" @drop="drop" @dragover="dragover">
-				<div class="row header header-1 bananinha1"><span @mousedown.prevent="resizeColumn"></span></div>
+		<div class="grid">
+			<div class="col col-1" draggable @dragstart="drag" @drop="drop" @dragover="dragover" v-for="(item, key, index) in fakeNews">
+                {{item.horario}}
+                <!-- <div class="row header header-1 bananinha1"><span @mousedown.prevent="resizeColumn">{{item.horario}}</span></div>
 				<div class="row">data bananinha1</div>
-				<div class="row">data bananinha1</div>
-			</div>
-			<div class="col col-2" draggable @dragstart="drag" @drop="drop" @dragover="dragover">
-				<div class="row header header-2 bananinha2"><span @mousedown.prevent="resizeColumn"></span></div>
-				<div class="row">data bananinha2</div>
-				<div class="row">data bananinha2</div>
-			</div>
-			<div class="col col-3" draggable @dragstart="drag" @drop="drop" @dragover="dragover">
-				<div class="row header header-3 bananinha3"><span @mousedown.prevent="resizeColumn"></span></div>
-				<div class="row">data bananinha3</div>
-				<div class="row">data bananinha3</div>
-			</div>
-			<div class="col col-4" draggable @dragstart="drag" @drop="drop" @dragover="dragover">
-				<div class="row header header-4 bananinha4"><span @mousedown.prevent="resizeColumn"></span></div>
-				<div class="row">data bananinha4</div>
-				<div class="row">data bananinha4</div>
-			</div>
-			<div class="col col-5" draggable @dragstart="drag" @drop="drop" @dragover="dragover">
-				<div class="row header header-5 bananinha5"><span @mousedown.prevent="resizeColumn"></span></div>
-				<div class="row">data bananinha5</div>
-				<div class="row">data bananinha5</div>
-			</div>
+				<div class="row">data bananinha1</div> -->
+            </div>
+
 		</div>
 	</div>
 </template>
@@ -68,13 +50,35 @@ export default Vue.extend({
             numberOne: '',
             operator: '',
             numberTwo: '',
-            columnDrag: ''
+            columnDrag: '',
+            fakeNews: [
+                {
+                    horario: 'bananinha06',
+                    conta: 'bananinha',
+                    url: 'bananinha',
+                    localidade: 'bananinha'
+                }
+            ]
         };
     },
     created: function() {
         /* this.disableSelect(); */
+        const fakeNews = {
+            horario: ['bananinha', 'bananinha'],
+            conta: ['bananinha', 'bananinha'],
+            descrição: ['bananinha', 'bananinha'],
+            url: ['bananinha', 'bananinha'],
+            localidade: ['bananinha', 'bananinha']
+        };
+        window.addEventListener(
+            'load',
+            function(event) {
+                this.mountHtmlGrid();
+            }.bind(this)
+        );
     },
     methods: {
+        mountHtmlGrid() {},
         clear() {
             this.display = '';
             this.numberOne = '';
@@ -137,7 +141,6 @@ export default Vue.extend({
             let indexToDrop = nodes.indexOf(columnDrop);
             let indexDrag = nodes.indexOf(this.columnDrag);
 
-            console.log(indexDrag);
             if (indexToDrop > indexDrag) {
                 grid.insertBefore(this.columnDrag, grid.childNodes[indexToDrop + 1]);
             } else {
@@ -164,13 +167,10 @@ export default Vue.extend({
 
                 let splitWidthColumns = grid.style.gridTemplateColumns.split(' ');
                 let value = parseFloat(splitWidthColumns[indexToDrop].replace('fr', ''));
-                /* console.log(`${document.querySelector('.grid .col-1').offsetWidth + e.clientX}`); */
-                if (e.clientX < 200) {
+                if (e.clientX - elementResizible.offsetLeft < 200) {
                     return;
                 } else {
-                    console.log(elementResizible.offsetWidth - elementResizible.offsetLeft);
-                    splitWidthColumns[indexToDrop] = `${elementResizible.offsetWidth -
-                        elementResizible.offsetLeft}px`;
+                    splitWidthColumns[indexToDrop] = `${e.clientX - elementResizible.offsetLeft}px`;
                 }
                 document.querySelector('.grid').style.gridTemplateColumns = splitWidthColumns.join(
                     ' '
