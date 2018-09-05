@@ -29,9 +29,9 @@
             {{dontShow}}
         </div>
 		<div class="grid" v-bind:style="{gridTemplateColumns: frColumns}">
-			<div class="col" :class="'col-'+index" draggable @dragstart="drag" @drop="drop" @dragover="dragover" v-for="(header,index,key) in headers">
-                <div v-show="header.show" class="row header header-1">{{header.value}}<span @mousedown.prevent="resizeColumn"></span></div>
-				<div v-show="header.show" class="row" v-for="(item, key, index) in fakeNews">{{item[header.value]}}</div>
+			<div class="col" :class="'col-'+index" @click="sortBy(header)" draggable @dragstart="drag" @drop="drop" @dragover="dragover" v-for="(header,index,key) in headers">
+                <div class="row header header-1">{{header}}<span @mousedown.prevent="resizeColumn"></span></div>
+				<div class="row" v-for="item in filteredData">{{item[header]}}</div>
             </div>
 		</div>
 	</div>
@@ -56,36 +56,66 @@ export default Vue.extend({
             columnDrag: '',
             dontShow: '',
             frColumns: '',
-            headers: [
-                {value: 'horario', show: true},
-                {value: 'conta', show: true},
-                {value: 'url', show: true},
-                {value: 'localidade', show: true},
-                {value: 'data', show: true}
+            sortKey: '',
+            sortOrders: new Object,
+            filteredData : new Array,
+            headers: [ 'horario', 'conta', 'url', 'localidade', 'data'
+                // {value: 'horario', show: true},
+                // {value: 'conta', show: true},
+                // {value: 'url', show: true},
+                // {value: 'localidade', show: true},
+                // {value: 'data', show: true}
             ],
             fakeNews: [
-                {
-                    horario: 'horarioo - 1',
-                    conta: 'contaa - 1',
-                    url: 'urll - 1',
-                    data: 'data - 1'
-                },
                 {
                     horario: 'horarioo',
                     conta: 'contaa',
                     url: 'urll',
                     localidade: 'localidadee',
                     data: 'data'
+                },
+                {
+                    horario: 'horarioo1',
+                    conta: 'contaa1',
+                    url: 'urll1',
+                    data: 'data1'
+                },
+                {
+                    horario: 'horarioo',
+                    conta: 'bontaa',
+                    url: 'urll',
+                    localidade: 'localidadee',
+                    data: 'data'
                 }
+                                
             ]
         };
     },
     created: function() {
-        window.addEventListener( 'load', function(event) {
-            this.frColumns = this.templateColumns(Object.keys(this.headers.filter(function(obj) { return obj.show === true; })).length);
-        }.bind(this)
-        );
+        this.headers.forEach(function (key) {
+            this.sortOrders[key] = 0;
+        }.bind(this));
+        // window.addEventListener( 'load', function(event) {
+        //     this.frColumns = this.templateColumns(Object.keys(this.headers.filter(function(obj) { return obj.show === true; })).length);
+        // }.bind(this));
     },
+    // computed: {
+    //     filteredData: function () {
+    //         if(this.sortOrders[this.sortKey] === 0) {
+    //             return this.fakeNews;
+    //         }
+    //         var order = this.sortOrders[this.sortKey] || 1;
+    //         var data = this.fakeNews;
+    //         if (this.sortKey) {
+    //             data.slice().sort(function (a, b) {
+    //                 a = a[this.sortKey];
+    //                 b = b[this.sortKey];
+    //                 return (a === b ? 0 : a > b ? 1 : -1) * order;
+    //             })
+    //         }
+    //         return data
+    //     }
+    // },
     methods: {
         clear() {
             this.display = '';
@@ -126,6 +156,32 @@ export default Vue.extend({
             this.numberOne = `${this.numberOne}${domElement.innerHTML}`;
             this.display = this.numberOne;
 
+        },
+        sortBy(key) {
+            this.sortKey = key
+            if(this.sortOrders[key] === 0){
+                this.sortOrders[key] = 1;
+            } else if(this.sortOrders[key] === 1){
+                this.sortOrders[key] = -1;
+            } else {
+                this.sortOrders[key] = 0;
+            }
+            this.filteredData = this.filter();
+        },
+        filter() {
+            if(this.sortOrders[this.sortKey] === 0) {
+                return this.fakeNews;
+            }
+            var order = this.sortOrders[this.sortKey] || 1;
+            var data = this.fakeNews;
+            if (this.sortKey) {
+                data.slice().sort(function (a, b) {
+                    a = a[this.sortKey];
+                    b = b[this.sortKey];
+                    return (a === b ? 0 : a > b ? 1 : -1) * order;
+                })
+            }
+            return data
         },
         statusColumn() {
             this.dontShow.show = !this.dontShow.show;
@@ -206,8 +262,8 @@ export default Vue.extend({
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 .container {
-    /* width: 500px; */
-    margin: 0 auto;
+    width: 1280px;
+    margin: 0 auto; 
 }
 .calculator {
     display: grid;
