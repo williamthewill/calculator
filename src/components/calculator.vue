@@ -41,6 +41,7 @@
 import Vue from 'vue';
 import { setFlagsFromString } from 'v8';
 import { setTimeout } from 'timers';
+import { join } from 'path';
 
 export default Vue.extend({
     name: 'calculator',
@@ -58,7 +59,7 @@ export default Vue.extend({
             frColumns: '',
             sortKey: '',
             sortOrders: new Object,
-            filteredData : new Array,
+            filteredData: new Array,
             headers: [ 'horario', 'conta', 'url', 'localidade', 'data'
                 // {value: 'horario', show: true},
                 // {value: 'conta', show: true},
@@ -95,27 +96,11 @@ export default Vue.extend({
         this.headers.forEach(function (key) {
             this.sortOrders[key] = 0;
         }.bind(this));
-        // window.addEventListener( 'load', function(event) {
-        //     this.frColumns = this.templateColumns(Object.keys(this.headers.filter(function(obj) { return obj.show === true; })).length);
-        // }.bind(this));
+        this.filteredData = this.fakeNews;
+        window.addEventListener( 'load', function(event) {
+            this.frColumns = this.templateColumns(this.headers);
+        }.bind(this));
     },
-    // computed: {
-    //     filteredData: function () {
-    //         if(this.sortOrders[this.sortKey] === 0) {
-    //             return this.fakeNews;
-    //         }
-    //         var order = this.sortOrders[this.sortKey] || 1;
-    //         var data = this.fakeNews;
-    //         if (this.sortKey) {
-    //             data.slice().sort(function (a, b) {
-    //                 a = a[this.sortKey];
-    //                 b = b[this.sortKey];
-    //                 return (a === b ? 0 : a > b ? 1 : -1) * order;
-    //             })
-    //         }
-    //         return data
-    //     }
-    // },
     methods: {
         clear() {
             this.display = '';
@@ -175,11 +160,11 @@ export default Vue.extend({
             var order = this.sortOrders[this.sortKey] || 1;
             var data = this.fakeNews;
             if (this.sortKey) {
-                data.slice().sort(function (a, b) {
+                data = data.slice().sort(function (a, b) {
                     a = a[this.sortKey];
                     b = b[this.sortKey];
                     return (a === b ? 0 : a > b ? 1 : -1) * order;
-                })
+                }.bind(this))
             }
             return data
         },
@@ -197,9 +182,9 @@ export default Vue.extend({
         hover(event: Event) {
             let elementHover = (document.onmouseover = domElement => domElement);
         },
-        templateColumns(num) {
+        templateColumns(num) {            
             let templateColumns = '';
-            for (let i = 0; i < num; i++){
+            for (let i = 0; i < num.length; i++){
                 templateColumns += '1fr ';
             }
             return templateColumns;
@@ -210,7 +195,15 @@ export default Vue.extend({
             let nodes = Array.prototype.slice.call(grid.children);
             let indexToDrop = nodes.indexOf(columnDrop);
             let indexDrag = nodes.indexOf(this.columnDrag);
-
+            let gridTemplateColumns = grid.style.gridTemplateColumns;
+            console.log(gridTemplateColumns);
+            gridTemplateColumns = gridTemplateColumns.split(' ');
+            [gridTemplateColumns[indexDrag], gridTemplateColumns[indexToDrop]] = [
+                gridTemplateColumns[indexToDrop],
+                gridTemplateColumns[indexDrag]
+            ];
+            console.log(gridTemplateColumns);
+            grid.style.gridTemplateColumns = gridTemplateColumns.join(' ');
             if (indexToDrop > indexDrag) {
                 grid.insertBefore(this.columnDrag, grid.childNodes[indexToDrop + 1]);
             } else {
@@ -274,6 +267,24 @@ export default Vue.extend({
     .display,
     .key {
         padding-top: 25%;
+    }
+    .arrow {
+        display: inline-block;
+        vertical-align: middle;
+        width: 0;
+        height: 0;
+        margin-left: 5px;
+        opacity: 0.66;
+    }
+    .arrow.asc {
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-bottom: 4px solid #fff;
+    }
+    .arrow.dsc {
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid #fff;
     }
     .display {
         grid-column: 1 / 5;
